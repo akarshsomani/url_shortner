@@ -40,7 +40,7 @@ async def shorten_url(long_url: str = Form(...)):
             conn.commit()
         except sqlite3.IntegrityError:
             raise HTTPException(status_code=400, detail="Short ID already exists.")
-    return {"short_url": f"https://yourdomain.com/{short_id}"}
+    return {"short_url": f"https://url-shortner-tt8q.onrender.com/{short_id}"}
 
 @app.get("/{short_id}")
 async def redirect_to_url(short_id: str):
