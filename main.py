@@ -31,7 +31,7 @@ async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/shorten")
-async def shorten_url(long_url: str = Form(...)):
+async def shorten_url(request: Request, long_url: str = Form(...)):
     short_id = generate_short_id()
     with sqlite3.connect(DB_NAME) as conn:
         cursor = conn.cursor()
@@ -40,7 +40,9 @@ async def shorten_url(long_url: str = Form(...)):
             conn.commit()
         except sqlite3.IntegrityError:
             raise HTTPException(status_code=400, detail="Short ID already exists.")
-    return {"short_url": f"https://url-shortner-tt8q.onrender.com/{short_id}"}
+    
+    base_url = str(request.base_url).strip("/")
+    return {"short_url": f"{base_url}/{short_id}"}
 
 @app.get("/{short_id}")
 async def redirect_to_url(short_id: str):
@@ -49,6 +51,6 @@ async def redirect_to_url(short_id: str):
         cursor.execute("SELECT long_url FROM urls WHERE short_id = ?", (short_id,))
         row = cursor.fetchone()
         if row:
-            return RedirectResponse(row[0])
+            return RedirectResponse(url=row[0], status_code=302)
         else:
             raise HTTPException(status_code=404, detail="URL not found.")
