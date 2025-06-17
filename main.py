@@ -32,6 +32,8 @@ async def home(request: Request):
 
 @app.post("/shorten")
 async def shorten_url(request: Request, long_url: str = Form(...)):
+    if not long_url.startswith(("http://", "https://")):
+        long_url = "https://" + long_url
     short_id = generate_short_id()
     with sqlite3.connect(DB_NAME) as conn:
         cursor = conn.cursor()
